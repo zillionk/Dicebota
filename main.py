@@ -20,7 +20,6 @@ MAIN_PAGE_HTML = """\
 DEFAULT_ADVANTURE_NAME = 'new_advanture'
 
 def advanture_key(advanture_name='DEFAULT_ADVANTURE_NAME'):
-    logging.debug('I come from advanture_key, current adv_name is: '+ advanture_name)
     return ndb.Key('advanture', advanture_name)
 
 
@@ -76,7 +75,6 @@ class RollDice(webapp2.RequestHandler):
     def post(self):
         advanture_name = self.request.get('advanture_name',
                                           DEFAULT_ADVANTURE_NAME)
-        logging.debug('I come from RollDice, current adv_name is: '+ advanture_name)
         the_message = Message(parent=advanture_key(advanture_name))
 
         if users.get_current_user():
@@ -94,7 +92,6 @@ class SwitchAdvanture(webapp2.RequestHandler):
 	def post(self):
 		advanture_name = self.request.get('advanture_name',
                                           DEFAULT_ADVANTURE_NAME)
-		logging.debug('I come from SwitchAdvanture, current adv_name is: '+ advanture_name)
 
 
 app = webapp2.WSGIApplication([

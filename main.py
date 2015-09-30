@@ -2,27 +2,17 @@ import webapp2
 import cgi
 import urllib
 import logging
+import jinja2
+import json
+
 from google.appengine.api import users
+from google.appengine.api import urlfetch
 from google.appengine.ext import ndb
 
-import jinja2
-
-MAIN_PAGE_HTML = """\
-    <form action='/roll?%s' method='post'>
-        <div><textarea name='content' row='3' clos='60'></textarea></div>
-        <div><input type='submit' value='roll dice'></div>
-    </form>
-    <form>Switch Advanture:
-        <input value='%s' name="advanture_name">
-        <input type="submit" value='switch'>
-    </form>
-    <a href='%s'>%s</a>
-"""
-DEFAULT_ADVANTURE_NAME = 'new_advanture'
+from variables import *
 
 def advanture_key(advanture_name='DEFAULT_ADVANTURE_NAME'):
     return ndb.Key('advanture', advanture_name)
-
 
 class Author(ndb.Model):
     identity = ndb.StringProperty(indexed=False)
@@ -38,7 +28,7 @@ class MainPage(webapp2.RequestHandler):
         user = users.get_current_user()
         self.response.write('<html><body>')
         advanture_name = self.request.get('advanture_name', DEFAULT_ADVANTURE_NAME)
-        logging.debug('I come from MainPage, current adv_name is: '+ advanture_name)
+        # logging.debug('I come from MainPage, current adv_name is: '+ advanture_name)
         message_query = Message.query(
             ancestor = advanture_key(advanture_name)).order(-Message.date)
         messages = message_query.fetch(10)
@@ -64,7 +54,7 @@ class MainPage(webapp2.RequestHandler):
         self.response.write('</body></html>')
 # """
 # {
-#     chooseInside: True
+#     chooseAmong: True
 #     chooseNum: 3
 #     diceNum: 4
 #     face:6
@@ -82,15 +72,10 @@ class RollDiceWrapper(webapp2.RequestHandler):
             the_message.author = Author(
                     identity=users.get_current_user().user_id(),
                     email=users.get_current_user().email())
-        # data = urllib.urlencode({'content':self.request.get('content')})
-        # result = urlfetch.fetch(url=self.request.url+'/dice',
-        #     payload=data,
-        #     method=urlfetch.GET,
-        #     # headers={'Content-Type': 'application/x-www-form-urlencoded'}
-        #     )
-
-        # the_message.content = result
-        the_message.content = self.request.get('content')
+        data = urllib.urlencode({'content':self.request.get('content')})
+        result = urlfetch.fetch(API_URL+'dice?%s' % data)
+        the_message.content = json.loads(result.content)['content']
+        # the_message.content = self.request.get('content')
         the_message.put()
 
         query_params = {'advanture_name': advanture_name}

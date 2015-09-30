@@ -5,6 +5,7 @@ import logging
 from google.appengine.api import users
 from google.appengine.ext import ndb
 
+import jinja2
 
 MAIN_PAGE_HTML = """\
     <form action='/roll?%s' method='post'>
@@ -71,7 +72,7 @@ class MainPage(webapp2.RequestHandler):
 #     comment: test
 # }
 # """
-class RollDice(webapp2.RequestHandler):
+class RollDiceWrapper(webapp2.RequestHandler):
     def post(self):
         advanture_name = self.request.get('advanture_name',
                                           DEFAULT_ADVANTURE_NAME)
@@ -81,7 +82,14 @@ class RollDice(webapp2.RequestHandler):
             the_message.author = Author(
                     identity=users.get_current_user().user_id(),
                     email=users.get_current_user().email())
+        # data = urllib.urlencode({'content':self.request.get('content')})
+        # result = urlfetch.fetch(url=self.request.url+'/dice',
+        #     payload=data,
+        #     method=urlfetch.GET,
+        #     # headers={'Content-Type': 'application/x-www-form-urlencoded'}
+        #     )
 
+        # the_message.content = result
         the_message.content = self.request.get('content')
         the_message.put()
 
@@ -96,6 +104,6 @@ class SwitchAdvanture(webapp2.RequestHandler):
 
 app = webapp2.WSGIApplication([
     ('/', MainPage),
-    ('/roll', RollDice),
+    ('/roll', RollDiceWrapper),
     ('/switch', SwitchAdvanture),
 ], debug=True)

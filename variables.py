@@ -12,6 +12,8 @@ MAIN_PAGE_HTML = """\
     </form>
     <a href='%s'>%s</a>
 """
-DEFAULT_ADVANTURE_NAME = 'new_advanture'
+DEFAULT_ADVANTURE_NAME = 'RE_FETCH_DICE_ROLLnew_advanture'
 
 API_URL = 'http://dicebota-api.appspot.com/'
+
+RE_FETCH_DICE_ROLL = r' *(\d{1,2})[dD](\d{1,3}) *([+-])* *(\d{1,3})* *([kK]\d{1})* *([\u4e00-\u9fa5A-Za-z0-9][\u4e00-\u9fa5A-Za-z0-9 ]*)*'

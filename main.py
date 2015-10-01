@@ -4,6 +4,7 @@ import urllib
 import logging
 import jinja2
 import json
+import re
 
 from google.appengine.api import users
 from google.appengine.api import urlfetch
@@ -72,12 +73,12 @@ class RollDiceWrapper(webapp2.RequestHandler):
             the_message.author = Author(
                     identity=users.get_current_user().user_id(),
                     email=users.get_current_user().email())
-        data = urllib.urlencode({'content':self.request.get('content')})
+        # pass data to dice roller, and get return value
+        meta_data = SplitString(self.request.get('content'))
+        data = urllib.urlencode({'content':meta_data})
         result = urlfetch.fetch(API_URL+'dice?%s' % data)
         the_message.content = json.loads(result.content)['content']
-        # the_message.content = self.request.get('content')
         the_message.put()
-
         query_params = {'advanture_name': advanture_name}
         self.redirect('/?' + urllib.urlencode(query_params))
 
@@ -86,6 +87,13 @@ class SwitchAdvanture(webapp2.RequestHandler):
 		advanture_name = self.request.get('advanture_name',
                                           DEFAULT_ADVANTURE_NAME)
 
+# get the order string, and get dice data from it.        
+def SplitString(the_order):
+    matches = re.search(RE_FETCH_DICE_ROLL, the_order)
+    if matches is None:
+        return "Error: Wrong command. please used fomula like '1d6+3'"
+    else:   
+        return matches.group(0)
 
 app = webapp2.WSGIApplication([
     ('/', MainPage),
